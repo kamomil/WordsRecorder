@@ -1,13 +1,16 @@
 // appends an audio element to playback and download recording
-var current_word;
+var words_queue = [];
 var recorder = null;
+var chunks = [];
+
 var recordingControl = document.createElement('button');
 recordingControl.type = 'button';
 recordingControl.innerHTML = 'stop this recording';
 recordingControl.disabled = true;
 recordingControl.onclick = function(){
-    if(recorder && recorder.state != "inactive")
+    if(recorder && recorder.state != "inactive"){
         recorder.stop();
+    }
 };
 document.body.appendChild(recordingControl);
 
@@ -16,6 +19,8 @@ var control = document.createElement('button');
 control.type = 'button';
 control.innerHTML = 'Start All Recordings';
 control.disabled = false;
+
+
 control.onclick = function(){
     if(stop == false){
         stop = true;
@@ -23,31 +28,36 @@ control.onclick = function(){
         recorder.stream.getTracks()[0].stop();
         recorder = null;
         recordingControl.disabled = true;
+        words_queue = [];
     }
     else {
         stop = false;
+        words_queue = [];
         control.innerHTML = 'stop forever';
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            // store streaming data chunks in array
-            var chunks = [];
-            // create media recorder instance to initialize recording
 
             recorder = new MediaRecorder(stream);
-            // function to be called when data is received
+
             recorder.ondataavailable = e => {
-                // add stream data to chunks
+                current_word = words_queue[0];
                 console.log("data available for " + current_word);
+                console.log("state is "+recorder.state);
                 chunks.push(e.data);
-                // if recorder is 'inactive' then recording has finished
-                if (!stop && recorder && recorder.state == 'inactive') {
-                    // convert stream data chunks to a 'webm' audio format as a blob
-                    const blob = new Blob(chunks.slice(), { type: 'audio/webm' });
-                    // convert blob to URL so it can be assigned to a audio src attribute
+                //it is important to create the blob in the ondataavailable event
+                //since the first data after the start() contain the file header,
+                //then it might happen the the last chnuck of one blob become
+                //buggily the first chunck of the next blob, then the header is missing
+                if (recorder && recorder.state == 'inactive') {
+
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    console.log("blob size 1 = " +blob.size);
                     createAudioElement(URL.createObjectURL(blob),current_word+".webm");
-                    var filename = "hello.txt";
-                    //saveAs(blob, filename);
+                    words_queue.shift();
                     chunks = [];
+                    recorder.start(1000);
+
                 }
+
             };
         }).catch(console.error);
     }
@@ -75,12 +85,20 @@ function createAudioElement(blobUrl,filename) {
 
 chrome.runtime.onMessage.addListener(function(message, sender) {
     console.log("tab got message "+message.data)
-    // request permission to access audio stream
 
-    // start recording with 1 second time between receiving 'ondataavailable' events
     if(recorder){
-        current_word = message.data;
-        recorder.start(1000);
+        //console.log("state1 "+recorder.state);
+        words_queue.push(message.data);
+        if(recorder.state == "recording"){
+            recorder.stop();
+        }
+        else
+        {
+            recorder.start(1000);
+        }
+
+
+        // start recording with 0.01 second time between receiving 'ondataavailable' events
         recordingControl.disabled = false;
     }
 
