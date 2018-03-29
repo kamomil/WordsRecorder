@@ -3,17 +3,6 @@ var words_queue = [];
 var recorder = null;
 var chunks = [];
 
-var recordingControl = document.createElement('button');
-recordingControl.type = 'button';
-recordingControl.innerHTML = 'stop this recording';
-recordingControl.disabled = true;
-recordingControl.onclick = function(){
-    if(recorder && recorder.state != "inactive"){
-        recorder.stop();
-    }
-};
-document.body.appendChild(recordingControl);
-
 var stop = true;
 var control = document.createElement('button');
 control.type = 'button';
@@ -27,7 +16,6 @@ control.onclick = function(){
         control.innerHTML = 'Start All Recordings';
         recorder.stream.getTracks()[0].stop();
         recorder = null;
-        recordingControl.disabled = true;
         words_queue = [];
     }
     else {
@@ -62,14 +50,19 @@ control.onclick = function(){
         }).catch(console.error);
     }
 };
+
 document.body.appendChild(control);
 
+var br = document.createElement('br');
+document.body.appendChild(br);
+document.body.appendChild(br);
+document.body.appendChild(br);
 
 
 function createAudioElement(blobUrl,filename) {
     const downloadEl = document.createElement('a');
     downloadEl.style = 'display: block';
-    downloadEl.innerHTML = 'download';
+    downloadEl.innerHTML = filename;
     downloadEl.download = filename;
     downloadEl.href = blobUrl;
     const audioEl = document.createElement('audio');
@@ -99,7 +92,6 @@ chrome.runtime.onMessage.addListener(function(message, sender) {
 
 
         // start recording with 0.01 second time between receiving 'ondataavailable' events
-        recordingControl.disabled = false;
     }
 
     // setTimeout to stop recording after 4 seconds
