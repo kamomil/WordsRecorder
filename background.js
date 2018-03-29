@@ -1,8 +1,21 @@
-var extTab;
+var extTab = null;
 
-chrome.tabs.create({'url': chrome.extension.getURL('MediaRecorderExample.html')}, function(tab) {
-    extTab = tab;
+chrome.browserAction.onClicked.addListener(function(tab) {
+	if(extTab != null)
+		alert("you already have an opened tab");
+	else
+		chrome.tabs.create({'url': chrome.extension.getURL('MediaRecorderExample.html')}, function(tab) {
+    		extTab = tab;
+	});
 });
+
+
+chrome.tabs.onRemoved.addListener(
+		function(tabId, removeInfo)
+		{
+		  if(extTab != null && extTab.id == tabId)
+			  extTab = null;
+		});
 
 chrome.extension.onRequest.addListener(
     function(request, sender, sendResponse)
