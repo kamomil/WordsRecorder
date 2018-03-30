@@ -10,7 +10,7 @@ control.innerHTML = 'Start All Recordings'
 control.disabled = false
 
 control.onclick = function() {
-    if (stop === false) {
+   if (stop === false) {
         stop = true
         recorder.stop()
         control.innerHTML = 'Start All Recordings'
@@ -39,11 +39,10 @@ control.onclick = function() {
                     createAudioElement(URL.createObjectURL(blob), currentWord + '.webm')
                     wordsQueue.shift()
                     chunks = []
-		    if (recorder)                        {
-recorder.start(1000)
-}                    else                        {
-wordsQueue = []
-}
+                    if (recorder)
+                        recorder.start(1000)
+                    else
+                        wordsQueue = []
                 }
             }
         }).catch(console.error)
