@@ -4,7 +4,7 @@ chrome.browserAction.onClicked.addListener(function(tab) {
 	if(extTab != null)
 		alert("you already have an opened tab");
 	else
-		chrome.tabs.create({'url': chrome.extension.getURL('MediaRecorderExample.html')}, function(tab) {
+		chrome.tabs.create({'url': chrome.extension.getURL('MediaRecorder.html')}, function(tab) {
     		extTab = tab;
 	});
 });

@@ -13,10 +13,11 @@ control.disabled = false;
 control.onclick = function(){
     if(stop == false){
         stop = true;
+        recorder.stop();
         control.innerHTML = 'Start All Recordings';
+
         recorder.stream.getTracks()[0].stop();
         recorder = null;
-        words_queue = [];
     }
     else {
         stop = false;
@@ -29,20 +30,24 @@ control.onclick = function(){
             recorder.ondataavailable = e => {
                 current_word = words_queue[0];
                 console.log("data available for " + current_word);
-                console.log("state is "+recorder.state);
+                //console.log("state is "+recorder.state);
                 chunks.push(e.data);
                 //it is important to create the blob in the ondataavailable event
                 //since the first data after the start() contain the file header,
                 //then it might happen the the last chnuck of one blob become
                 //buggily the first chunck of the next blob, then the header is missing
-                if (recorder && recorder.state == 'inactive') {
+                if (recorder == null || recorder.state == 'inactive') {
 
                     const blob = new Blob(chunks, { type: 'audio/webm' });
                     console.log("blob size 1 = " +blob.size);
                     createAudioElement(URL.createObjectURL(blob),current_word+".webm");
                     words_queue.shift();
                     chunks = [];
-                    recorder.start(1000);
+		    if(recorder)
+                    	recorder.start(1000);
+		    else
+        	    	words_queue = [];
+
 
                 }
 
