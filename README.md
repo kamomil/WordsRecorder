@@ -7,6 +7,7 @@ The name of the file is the selected text with the ".webm" suffix.
 It is intended for recording massive amount of words.
 Then the recordings can be used for dictionaries - to have the words pronunciation.
 
+This is very basic recording. It doesn't do advanced things like equalization or triming.
 #### Design
 The code in `content_script.js` is injected to every tab. It has a listener to selected text.
 Once a text is selected it is sent to `background.js` which send it to `MediaRecorder.js` which contains all the logic.
