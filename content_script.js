@@ -7,3 +7,11 @@ document.addEventListener('mouseup', function(event) {
     }
 })
 console.log('content script 222!')
+
+document.onkeydown = function(evt) {
+    evt = evt || window.event;
+    if (evt.ctrlKey && (evt.keyCode == 70 || evt.keyCode == 102)) {
+        alert("Ctrl-F");
+        //chrome.extension.sendRequest({'message':'setText', 'data': sel}, function(response) {})
+    }
+};
